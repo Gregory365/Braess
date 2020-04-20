@@ -7,65 +7,27 @@
     using System.Windows;
     using System.Windows.Media;
     using Braess.Model.Tools;
+    using MoreLinq;
 
     public class Canvas
     {
-        private readonly IList<Point> points = new List<Point>
-        {
-            new Point(87, 122),
-            new Point(125, 96),
-            new Point(273, 93),
-            new Point(346, 122),
-            new Point(555, 127),
-            new Point(953, 105),
-            new Point(311, 196),
-            new Point(434, 274),
-            new Point(797, 227),
-            new Point(460, 322),
-            new Point(663, 321),
-            new Point(986, 301),
-            new Point(273, 401),
-            new Point(524, 398),
-            new Point(663, 390),
-            new Point(875, 353),
-            new Point(1077, 368),
-            new Point(1179, 373),
-            new Point(290, 441),
-            new Point(743, 430),
-            new Point(922, 431),
-            new Point(170, 575),
-            new Point(279, 546),
-            new Point(317, 545),
-            new Point(459, 504),
-            new Point(420, 560),
-            new Point(472, 576),
-            new Point(722, 478),
-            new Point(625, 529),
-            new Point(883, 518),
-            new Point(614, 691),
-            new Point(882, 615),
-            new Point(816, 381),
-        };
+        private readonly ObservableCollection<Circle> circles = new ObservableCollection<Circle>();
 
-        private Dictionary<Circle, List<Line>> linesLinkedToCircles = new Dictionary<Circle, List<Line>>();
+        private readonly ObservableCollection<Line> lines = new ObservableCollection<Line>();
 
-        private ObservableCollection<Circle> circles = new ObservableCollection<Circle>();
+        private readonly double circleDiameter;
 
-        private ObservableCollection<Line> lines = new ObservableCollection<Line>();
+        private readonly SolidColorBrush circleColor;
 
-        private double circleDiameter;
+        private readonly double selectedCircleDiameter;
 
-        private SolidColorBrush circleColor;
+        private readonly SolidColorBrush selectedCircleColor;
+
+        private readonly double lineWidth;
+
+        private readonly SolidColorBrush lineColor;
 
         private Circle selectedCircle;
-
-        private double selectedCircleDiameter;
-
-        private SolidColorBrush selectedCircleColor;
-
-        private double lineWidth;
-
-        private SolidColorBrush lineColor;
 
         public Canvas(double circleDiameter, SolidColorBrush circleColor, double selectedCircleDiameter, SolidColorBrush selectedCircleColor, double lineWidth, SolidColorBrush lineColor)
         {
@@ -75,18 +37,9 @@
             this.lineColor = lineColor;
             this.selectedCircleDiameter = selectedCircleDiameter;
             this.selectedCircleColor = selectedCircleColor;
-
-            foreach (Point point in points)
-            {
-                AddCircle(point);
-            }
         }
 
         public event EventHandler SelectedCircleChanged = delegate { };
-
-        public ReadOnlyObservableCollection<Circle> Circles => new ReadOnlyObservableCollection<Circle>(circles);
-
-        public ReadOnlyObservableCollection<Line> Lines => new ReadOnlyObservableCollection<Line>(lines);
 
         public Circle SelectedCircle
         {
@@ -102,26 +55,77 @@
             }
         }
 
-        public void RemoveCircle(Circle circle)
-        {
-            if (SelectedCircle?.Point == circle.Point)
-            {
-                SelectedCircle = null;
-            }
+        public ReadOnlyObservableCollection<Circle> Circles => new ReadOnlyObservableCollection<Circle>(circles);
 
-            circles.Remove(circle);
-            lines.RemoveAll(x => x.Point1 == circle.Point || x.Point2 == circle.Point);
-        }
+        public ReadOnlyObservableCollection<Line> Lines => new ReadOnlyObservableCollection<Line>(lines);
 
         public void AddCircle(Point point)
         {
             circles.Add(new Circle(point, circleDiameter, circleColor));
         }
 
-        public void ToggleLine(Point point1, Point point2)
+        public void RemoveClosestCircle(Point mousePoint)
+        {
+            Circle closestCircle = GetClosestCircle(mousePoint);
+
+            if (SelectedCircle?.Point == closestCircle.Point)
+            {
+                SelectedCircle = null;
+            }
+
+            circles.Remove(closestCircle);
+            lines.RemoveAll(x => x.Point1 == closestCircle.Point || x.Point2 == closestCircle.Point);
+        }
+
+        public void Process(Point mousePoint)
+        {
+            Circle closestCircle = GetClosestCircle(mousePoint);
+
+            if (closestCircle is null)
+            {
+                return;
+            }
+
+            // if circle is selected
+            if (!(SelectedCircle is null))
+            {
+                // if the closest circle is the same as the currently selected circle.
+                if (closestCircle.Point == SelectedCircle.Point)
+                {
+                    // deselect the cicle.
+                    SelectedCircle = null;
+                }
+
+                // if the closest circle is different to the currently selected circle.
+                else
+                {
+                    ToggleLine(SelectedCircle.Point, closestCircle.Point);
+
+                    // change the closest circle to be the new selected circle
+                    SelectedCircle = new Circle(closestCircle.Point, selectedCircleDiameter, selectedCircleColor);
+                }
+            }
+            else
+            {
+                SelectedCircle = new Circle(closestCircle.Point, selectedCircleDiameter, selectedCircleColor);
+            }
+        }
+
+        private static double GetDistance(Point point1, Point point2)
+        {
+            return Math.Sqrt(Math.Pow(point1.X - point2.X, 2) + Math.Pow(point1.Y - point2.Y, 2));
+        }
+
+        private Circle GetClosestCircle(Point point)
+        {
+            return circles.Count == 0 ? null : circles.MinBy(x => GetDistance(point, x.Point)).First();
+        }
+
+        private void ToggleLine(Point point1, Point point2)
         {
             Line newLine = new Line(point1, point2, lineWidth, lineColor);
 
+            // Todo: Line could be split into two classes one for the two points and the other containing the width and color so it is more efficient.
             if (lines.Contains(newLine))
             {
                 lines.Remove(newLine);
@@ -130,48 +134,6 @@
             {
                 lines.Add(newLine);
             }
-        }
-
-        public void Process(Circle closestCircle)
-        {
-            if (SelectedCircle is null)
-            {
-                SelectedCircle = new Circle(closestCircle.Point, selectedCircleDiameter, selectedCircleColor);
-            }
-            else
-            {
-                if (SelectedCircle.Point == closestCircle.Point)
-                {
-                    SelectedCircle = null;
-                }
-                else
-                {
-                    ToggleLine(SelectedCircle.Point, closestCircle.Point);
-                    SelectedCircle = new Circle(closestCircle.Point, selectedCircleDiameter, selectedCircleColor);
-                }
-            }
-        }
-
-        public Circle GetClosestCircle(Point mousePoint)
-        {
-            if (circles.Count == 0)
-            {
-                return null;
-            }
-
-            List<double> distances = new List<double>();
-
-            foreach (Circle circle in circles)
-            {
-                distances.Add(GetDistance(circle.Point, mousePoint));
-            }
-
-            return circles[distances.IndexOf(distances.Min())];
-        }
-
-        private double GetDistance(Point point1, Point point2)
-        {
-            return Math.Sqrt(Math.Pow(point1.X - point2.X, 2) + Math.Pow(point1.Y - point2.Y, 2));
         }
     }
 }

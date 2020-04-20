@@ -61,11 +61,6 @@
             return !(line1 == line2);
         }
 
-        public bool SamePositionAndOrientation(Line otherLine)
-        {
-            return Point1 == otherLine.Point1 && Point2 == otherLine.Point2;
-        }
-
         public override bool Equals(object obj)
         {
             if (obj is Line otherLine)

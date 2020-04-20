@@ -33,19 +33,21 @@
 
         public void MouseClicked()
         {
-            Circle closestCircle = canvas.GetClosestCircle(new Point(MouseX, MouseY));
+            Point mousePoint = new Point(MouseX, MouseY);
+            bool isShiftDown = Keyboard.IsKeyDown(Key.LeftShift);
+            bool isCtrlDown = Keyboard.IsKeyDown(Key.LeftCtrl);
 
-            if (Keyboard.IsKeyDown(Key.LeftShift))
+            if (isShiftDown && !isCtrlDown)
             {
-                canvas.AddCircle(new Point(MouseX, MouseY));
+                canvas.AddCircle(mousePoint);
             }
-            else if (Keyboard.IsKeyDown(Key.LeftCtrl))
+            else if (isCtrlDown && !isShiftDown)
             {
-                canvas.RemoveCircle(closestCircle);
+                canvas.RemoveClosestCircle(mousePoint);
             }
             else
             {
-                canvas.Process(closestCircle);
+                canvas.Process(mousePoint);
             }
         }
 

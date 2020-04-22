@@ -14,6 +14,10 @@
     <Window.DataContext>
         <vm:MainWindowVM/>
     </Window.DataContext>
+    <Window.Resources>
+        <vmt:PointCentraliserConverter x:Key="PointCentraliserConverter"/>
+        <vmt:NullToVisibilityConverter x:Key="NullToVisibilityConverter"/>
+    </Window.Resources>
     <Grid>
         <Canvas Width="1250" Height="750" Margin="5" Grid.Column="0" Grid.Row="0" Grid.ColumnSpan="4" Background="White">
             <i:Interaction.Behaviors>
@@ -34,13 +38,15 @@
                 </ItemsControl.ItemsPanel>
                 <ItemsControl.ItemTemplate>
                     <DataTemplate>
-                        <Line X1="{Binding Path=X1}" Y1="{Binding Path=Y1}" StrokeThickness="{Binding Path=Width}"
-                              X2="{Binding Path=X2}" Y2="{Binding Path=Y2}" Stroke="{Binding Path=Color}"/>
+                        <Line X1="{Binding Path=Point1.X}" Y1="{Binding Path=Point1.Y}"
+                              X2="{Binding Path=Point2.X}" Y2="{Binding Path=Point2.Y}"
+                              Stroke="{Binding Path=DataContext.LineColor, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=Window}}"
+                              StrokeThickness="{Binding Path=DataContext.LineWidth, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=Window}}"/>
                     </DataTemplate>
                 </ItemsControl.ItemTemplate>
             </ItemsControl>
 
-            <ItemsControl ItemsSource="{Binding Path=Circles}">
+            <ItemsControl ItemsSource="{Binding Path=Points}">
                 <ItemsControl.ItemsPanel>
                     <ItemsPanelTemplate>
                         <Canvas/>
@@ -48,19 +54,46 @@
                 </ItemsControl.ItemsPanel>
                 <ItemsControl.ItemContainerStyle>
                     <Style TargetType="ContentPresenter">
-                        <Setter Property="Canvas.Left" Value="{Binding Path=CenterX}"/>
-                        <Setter Property="Canvas.Top" Value="{Binding Path=CenterY}"/>
+                        <Setter Property="Canvas.Left">
+                            <Setter.Value>
+                                <vmt:ConverterBindableParameter Binding="{Binding Path=X}"
+                                                                Converter="{StaticResource PointCentraliserConverter}"
+                                                                ConverterParameter="{Binding Path=DataContext.PointDiameter, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=Window}}"/>
+                            </Setter.Value>
+                        </Setter>
+                        <Setter Property="Canvas.Top">
+                            <Setter.Value>
+                                <vmt:ConverterBindableParameter Binding="{Binding Path=Y}"
+                                                                Converter="{StaticResource PointCentraliserConverter}"
+                                                                ConverterParameter="{Binding Path=DataContext.PointDiameter, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=Window}}"/>
+                            </Setter.Value>
+                        </Setter>
                     </Style>
                 </ItemsControl.ItemContainerStyle>
                 <ItemsControl.ItemTemplate>
                     <DataTemplate>
-                        <Ellipse Width="{Binding Path=Diameter}" Height="{Binding Path=Diameter}" Fill="{Binding Path=Color}"/>
+                        <Ellipse Width="{Binding Path=DataContext.PointDiameter, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=Window}}"
+                                 Height="{Binding Path=DataContext.PointDiameter, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=Window}}"
+                                 Fill="{Binding Path=DataContext.PointColor, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=Window}}"/>
                     </DataTemplate>
                 </ItemsControl.ItemTemplate>
             </ItemsControl>
 
-            <Ellipse Width="{Binding Path=SelectedCircle.Diameter}" Height="{Binding Path=SelectedCircle.Diameter}" Fill="{Binding Path=SelectedCircle.Color}"
-                     Canvas.Left="{Binding Path=SelectedCircle.CenterX}" Canvas.Top="{Binding Path=SelectedCircle.CenterY}"/>
+            <Ellipse Width="{Binding Path=SelectedPointDiameter}"
+                     Height="{Binding Path=SelectedPointDiameter}"
+                     Fill="{Binding Path=SelectedPointColor}"
+                     Visibility="{Binding Path=SelectedPoint, Converter={StaticResource NullToVisibilityConverter}}">
+                <Canvas.Left>
+                    <vmt:ConverterBindableParameter Binding="{Binding Path=SelectedPoint.X}"
+                                                    Converter="{StaticResource PointCentraliserConverter}"
+                                                    ConverterParameter="{Binding Path=SelectedPointDiameter}"/>
+                </Canvas.Left>
+                <Canvas.Top>
+                    <vmt:ConverterBindableParameter Binding="{Binding Path=SelectedPoint.Y}"
+                                                    Converter="{StaticResource PointCentraliserConverter}"
+                                                    ConverterParameter="{Binding Path=SelectedPointDiameter}"/>
+                </Canvas.Top>
+            </Ellipse>
         </Canvas>
     </Grid>
 </Window>

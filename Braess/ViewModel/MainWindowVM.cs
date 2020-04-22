@@ -1,7 +1,6 @@
 ﻿namespace Braess.ViewModel
 {
     using System.Collections.ObjectModel;
-    using System.Windows;
     using System.Windows.Input;
     using System.Windows.Media;
     using Braess.Model;
@@ -13,8 +12,8 @@
 
         public MainWindowVM()
         {
-            canvas = new Canvas(10, Brushes.Black, 16, Brushes.Orange, 2, Brushes.Blue);
-            canvas.SelectedCircleChanged += Canvas_SelectedCircleChanged;
+            canvas = new Canvas();
+            canvas.SelectedPointChanged += Canvas_SelectedPointChanged;
         }
 
         public double MouseX { get; set; }
@@ -23,11 +22,23 @@
 
         public string Title => "Braess Paradox";
 
-        public ReadOnlyCollection<Circle> Circles => canvas.Circles;
+        public SolidColorBrush LineColor => Brushes.Blue;
+
+        public double LineWidth => 2;
+
+        public SolidColorBrush PointColor => Brushes.Black;
+
+        public double PointDiameter => 10;
+
+        public SolidColorBrush SelectedPointColor => Brushes.Orange;
+
+        public double SelectedPointDiameter => 16;
+
+        public ReadOnlyCollection<Point> Points => canvas.Points;
 
         public ReadOnlyCollection<Line> Lines => canvas.Lines;
 
-        public Circle SelectedCircle => canvas.SelectedCircle;
+        public Point SelectedPoint => canvas.SelectedPoint;
 
         public ICommand MouseClickedCommand => new RelayCommand(MouseClicked);
 
@@ -39,11 +50,11 @@
 
             if (isShiftDown && !isCtrlDown)
             {
-                canvas.AddCircle(mousePoint);
+                canvas.AddPoint(mousePoint);
             }
             else if (isCtrlDown && !isShiftDown)
             {
-                canvas.RemoveClosestCircle(mousePoint);
+                canvas.RemoveClosestPoint(mousePoint);
             }
             else
             {
@@ -51,9 +62,9 @@
             }
         }
 
-        private void Canvas_SelectedCircleChanged(object sender, System.EventArgs e)
+        private void Canvas_SelectedPointChanged(object sender, System.EventArgs e)
         {
-            OnPropertyChanged(nameof(SelectedCircle));
+            OnPropertyChanged(nameof(SelectedPoint));
         }
     }
 }

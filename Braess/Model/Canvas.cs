@@ -11,103 +11,82 @@
 
     public class Canvas
     {
-        private readonly ObservableCollection<Circle> circles = new ObservableCollection<Circle>();
+        private readonly ObservableCollection<Point> points = new ObservableCollection<Point>();
 
         private readonly ObservableCollection<Line> lines = new ObservableCollection<Line>();
 
-        private readonly double circleDiameter;
+        private Point selectedPoint;
 
-        private readonly SolidColorBrush circleColor;
+        public event EventHandler SelectedPointChanged = delegate { };
 
-        private readonly double selectedCircleDiameter;
-
-        private readonly SolidColorBrush selectedCircleColor;
-
-        private readonly double lineWidth;
-
-        private readonly SolidColorBrush lineColor;
-
-        private Circle selectedCircle;
-
-        public Canvas(double circleDiameter, SolidColorBrush circleColor, double selectedCircleDiameter, SolidColorBrush selectedCircleColor, double lineWidth, SolidColorBrush lineColor)
-        {
-            this.circleDiameter = circleDiameter;
-            this.circleColor = circleColor;
-            this.lineWidth = lineWidth;
-            this.lineColor = lineColor;
-            this.selectedCircleDiameter = selectedCircleDiameter;
-            this.selectedCircleColor = selectedCircleColor;
-        }
-
-        public event EventHandler SelectedCircleChanged = delegate { };
-
-        public Circle SelectedCircle
+        public Point SelectedPoint
         {
             get
             {
-                return selectedCircle;
+                return selectedPoint;
             }
 
             private set
             {
-                selectedCircle = value;
-                SelectedCircleChanged.Invoke(this, new EventArgs());
+                selectedPoint = value;
+                SelectedPointChanged.Invoke(this, new EventArgs());
             }
         }
 
-        public ReadOnlyObservableCollection<Circle> Circles => new ReadOnlyObservableCollection<Circle>(circles);
+        public ReadOnlyObservableCollection<Point> Points => new ReadOnlyObservableCollection<Point>(points);
 
         public ReadOnlyObservableCollection<Line> Lines => new ReadOnlyObservableCollection<Line>(lines);
 
-        public void AddCircle(Point point)
+        public void AddPoint(Point point)
         {
-            circles.Add(new Circle(point, circleDiameter, circleColor));
+            points.Add(point);
         }
 
-        public void RemoveClosestCircle(Point mousePoint)
+        public void RemoveClosestPoint(Point mousePoint)
         {
-            Circle closestCircle = GetClosestCircle(mousePoint);
+            Point closestPoint = GetClosestPoint(mousePoint);
 
-            if (SelectedCircle?.Point == closestCircle.Point)
+            if (SelectedPoint == closestPoint)
             {
-                SelectedCircle = null;
+                SelectedPoint = null;
             }
 
-            circles.Remove(closestCircle);
-            lines.RemoveAll(x => x.Point1 == closestCircle.Point || x.Point2 == closestCircle.Point);
+            points.Remove(closestPoint);
+            lines.RemoveAll(x => x.Point1 == closestPoint || x.Point2 == closestPoint);
         }
 
         public void Process(Point mousePoint)
         {
-            Circle closestCircle = GetClosestCircle(mousePoint);
+            Point closestPoint = GetClosestPoint(mousePoint);
 
-            if (closestCircle is null)
+            if (closestPoint is null)
             {
                 return;
             }
 
-            // if circle is selected
-            if (!(SelectedCircle is null))
+            // if point is selected
+            if (!(SelectedPoint is null))
             {
-                // if the closest circle is the same as the currently selected circle.
-                if (closestCircle.Point == SelectedCircle.Point)
+                // if the currently selected point is the closest point.
+                if (SelectedPoint == closestPoint)
                 {
-                    // deselect the cicle.
-                    SelectedCircle = null;
+                    // deselect it.
+                    SelectedPoint = null;
                 }
 
-                // if the closest circle is different to the currently selected circle.
+                // if the currently selected point is different to the closest point.
                 else
                 {
-                    ToggleLine(SelectedCircle.Point, closestCircle.Point);
+                    ToggleLine(SelectedPoint, closestPoint);
 
-                    // change the closest circle to be the new selected circle
-                    SelectedCircle = new Circle(closestCircle.Point, selectedCircleDiameter, selectedCircleColor);
+                    // change the selected point to be the closest point.
+                    SelectedPoint = closestPoint.Clone();
                 }
             }
             else
             {
-                SelectedCircle = new Circle(closestCircle.Point, selectedCircleDiameter, selectedCircleColor);
+                // change the selected point to be the closest point.
+                SelectedPoint = closestPoint.Clone();
             }
         }
 
@@ -116,16 +95,15 @@
             return Math.Sqrt(Math.Pow(point1.X - point2.X, 2) + Math.Pow(point1.Y - point2.Y, 2));
         }
 
-        private Circle GetClosestCircle(Point point)
+        private Point GetClosestPoint(Point point)
         {
-            return circles.Count == 0 ? null : circles.MinBy(x => GetDistance(point, x.Point)).First();
+            return points.Count == 0 ? null : points.MinBy(x => GetDistance(x, point)).First();
         }
 
         private void ToggleLine(Point point1, Point point2)
         {
-            Line newLine = new Line(point1, point2, lineWidth, lineColor);
+            Line newLine = new Line(point1, point2);
 
-            // Todo: Line could be split into two classes one for the two points and the other containing the width and color so it is more efficient.
             if (lines.Contains(newLine))
             {
                 lines.Remove(newLine);

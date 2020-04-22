@@ -32,7 +32,7 @@
 
         public static bool operator ==(Line line1, Line line2)
         {
-            return line1.Equals(line2);
+            return line2.Equals(line1);
         }
 
         public static bool operator !=(Line line1, Line line2)

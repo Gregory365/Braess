@@ -17,6 +17,7 @@
     <Window.Resources>
         <vmt:PointCentraliserConverter x:Key="PointCentraliserConverter"/>
         <vmt:NullToVisibilityConverter x:Key="NullToVisibilityConverter"/>
+        <vmt:AverageDoubleConverter x:Key="AverageDoubleConverter"/>
     </Window.Resources>
     <Grid>
         <Canvas Width="1250" Height="750" Margin="5" Grid.Column="0" Grid.Row="0" Grid.ColumnSpan="4" Background="White">
@@ -46,7 +47,40 @@
                 </ItemsControl.ItemTemplate>
             </ItemsControl>
 
-            <ItemsControl ItemsSource="{Binding Path=Points}">
+            <ItemsControl ItemsSource="{Binding Path=Lines}">
+                <ItemsControl.ItemsPanel>
+                    <ItemsPanelTemplate>
+                        <Canvas/>
+                    </ItemsPanelTemplate>
+                </ItemsControl.ItemsPanel>
+                <ItemsControl.ItemContainerStyle>
+                    <Style TargetType="ContentPresenter">
+                        <Setter Property="Canvas.Left">
+                            <Setter.Value>
+                                <MultiBinding Converter="{StaticResource AverageDoubleConverter}">
+                                    <Binding Path="Point1.X"/>
+                                    <Binding Path="Point2.X"/>
+                                </MultiBinding>
+                            </Setter.Value>
+                        </Setter>
+                        <Setter Property="Canvas.Top">
+                            <Setter.Value>
+                                <MultiBinding Converter="{StaticResource AverageDoubleConverter}">
+                                    <Binding Path="Point1.Y"/>
+                                    <Binding Path="Point2.Y"/>
+                                </MultiBinding>
+                            </Setter.Value>
+                        </Setter>
+                    </Style>
+                </ItemsControl.ItemContainerStyle>
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate>
+                        <TextBlock Text="{Binding Path=Length, StringFormat=N2}"/>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+
+            <ItemsControl ItemsSource="{Binding Path=Points, StringFormat=N2}">
                 <ItemsControl.ItemsPanel>
                     <ItemsPanelTemplate>
                         <Canvas/>

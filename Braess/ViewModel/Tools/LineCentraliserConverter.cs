@@ -4,17 +4,15 @@
     using System.Globalization;
     using System.Windows.Data;
 
-    public class AverageDoubleConverter : IMultiValueConverter
+    public class LineCentraliserConverter : IMultiValueConverter
     {
         public object Convert(object[] values, Type targetType, object parameter, CultureInfo culture)
         {
-            double total = 0;
-            foreach (double value in values)
-            {
-                total += value;
-            }
+            double average = ((double)values[0] + (double)values[1]) / 2;
 
-            return total / values.Length;
+            return average - double.Parse((string)parameter);
+
+            //return parameter != null && (double)values[0] < (double)values[1] ? average - double.Parse((string)parameter) : average;
         }
 
         public object[] ConvertBack(object value, Type[] targetTypes, object parameter, CultureInfo culture)

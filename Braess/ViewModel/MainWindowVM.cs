@@ -22,7 +22,7 @@
 
         public string Title => "Braess Paradox";
 
-        public SolidColorBrush LineColor => Brushes.Blue;
+        public SolidColorBrush LineColor => Brushes.LightBlue;
 
         public double LineWidth => 2;
 

@@ -28,11 +28,19 @@
             }
 
             Length = Math.Sqrt(Math.Pow(Point1.X - Point2.X, 2) + Math.Pow(Point1.Y - Point2.Y, 2));
+
+            CentrePoint = new Point((Point1.X + Point2.X) / 2, (Point1.Y + Point2.Y) / 2);
         }
+
+        public double Lanes { get; set; } = 1;
+
+        public double Delay { get; set; } = 0;
 
         public double Length { get; }
 
         public Point Point1 { get; }
+
+        public Point CentrePoint { get; }
 
         public Point Point2 { get; }
 
@@ -59,6 +67,11 @@
         public override int GetHashCode()
         {
             return (2 * Point1.GetHashCode()) + (3 * Point2.GetHashCode());
+        }
+
+        public Line Clone()
+        {
+            return new Line(Point1.Clone(), Point2.Clone());
         }
     }
 }

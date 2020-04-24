@@ -14,7 +14,7 @@
 
         public static bool operator ==(Point point1, Point point2)
         {
-            return point2.Equals(point1);
+            return point1 is null ? point2 is null : point1.Equals(point2);
         }
 
         public static bool operator !=(Point point1, Point point2)

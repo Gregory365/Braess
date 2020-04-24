@@ -14,6 +14,7 @@
         {
             canvas = new Canvas();
             canvas.SelectedPointChanged += Canvas_SelectedPointChanged;
+            canvas.SelectedLineChanged += Canvas_SelectedLineChanged;
         }
 
         public double MouseX { get; set; }
@@ -34,11 +35,17 @@
 
         public double SelectedPointDiameter => 16;
 
+        public SolidColorBrush SelectedLineColor => Brushes.Blue;
+
+        public double SelectedLineWidth => 5;
+
         public ReadOnlyCollection<Point> Points => canvas.Points;
 
         public ReadOnlyCollection<Line> Lines => canvas.Lines;
 
         public Point SelectedPoint => canvas.SelectedPoint;
+
+        public Line SelectedLine => canvas.SelectedLine;
 
         public ICommand MouseClickedCommand => new RelayCommand(MouseClicked);
 
@@ -48,23 +55,38 @@
             bool isShiftDown = Keyboard.IsKeyDown(Key.LeftShift);
             bool isCtrlDown = Keyboard.IsKeyDown(Key.LeftCtrl);
 
-            if (isShiftDown && !isCtrlDown)
+            if (isShiftDown)
             {
-                canvas.AddPoint(mousePoint);
-            }
-            else if (isCtrlDown && !isShiftDown)
-            {
-                canvas.RemoveClosestPoint(mousePoint);
+                if (isCtrlDown)
+                {
+                    canvas.RemoveClosestPoint(mousePoint);
+                }
+                else
+                {
+                    canvas.AddPoint(mousePoint);
+                }
             }
             else
             {
-                canvas.Process(mousePoint);
+                if (isCtrlDown)
+                {
+                    canvas.ProcessLine(mousePoint);
+                }
+                else
+                {
+                    canvas.ProcessPoint(mousePoint);
+                }
             }
         }
 
         private void Canvas_SelectedPointChanged(object sender, System.EventArgs e)
         {
             OnPropertyChanged(nameof(SelectedPoint));
+        }
+
+        private void Canvas_SelectedLineChanged(object sender, System.EventArgs e)
+        {
+            OnPropertyChanged(nameof(SelectedLine));
         }
     }
 }

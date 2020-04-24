@@ -8,6 +8,7 @@
 // Todo: Investigate delegates.
 [assembly: System.Diagnostics.CodeAnalysis.SuppressMessage("StyleCop.CSharp.ReadabilityRules", "SA1130:Use lambda syntax", Justification = "Don't understand delgates", Scope = "member", Target = "~E:Braess.Model.Canvas.SelectedPointChanged")]
 [assembly: System.Diagnostics.CodeAnalysis.SuppressMessage("StyleCop.CSharp.ReadabilityRules", "SA1130:Use lambda syntax", Justification = "Don't understand delgates", Scope = "member", Target = "~E:Braess.ViewModel.BaseVM.PropertyChanged")]
+[assembly: System.Diagnostics.CodeAnalysis.SuppressMessage("StyleCop.CSharp.ReadabilityRules", "SA1130:Use lambda syntax", Justification = "Don't understand delgates", Scope = "member", Target = "~E:Braess.Model.Canvas.SelectedLineChanged")]
 
 [assembly: System.Diagnostics.CodeAnalysis.SuppressMessage("StyleCop.CSharp.ReadabilityRules", "SA1111:Closing parenthesis should be on line of last parameter", Justification = "auto generate code")]
 [assembly: System.Diagnostics.CodeAnalysis.SuppressMessage("StyleCop.CSharp.SpacingRules", "SA1009:Closing parenthesis should be spaced correctly", Justification = "auto generate code")]

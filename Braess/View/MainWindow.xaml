@@ -10,7 +10,8 @@
         mc:Ignorable="d"
         SizeToContent="WidthAndHeight"
         WindowStartupLocation="CenterScreen"
-        Title="{Binding Path=Title}">
+        Title="{Binding Path=Title}"
+        Background="Gray">
     <Window.DataContext>
         <vm:MainWindowVM/>
     </Window.DataContext>
@@ -18,9 +19,20 @@
         <vmt:PointCentraliserConverter x:Key="PointCentraliserConverter"/>
         <vmt:LineCentraliserConverter x:Key="LineCentraliserConverter"/>
         <vmt:NullToVisibilityConverter x:Key="NullToVisibilityConverter"/>
+        <vmt:NullToBoolConverter x:Key="NullToBoolConverter"/>
     </Window.Resources>
-    <Grid>
-        <Canvas Width="1250" Height="750" Margin="5" Grid.Column="0" Grid.Row="0" Grid.ColumnSpan="4" Background="White">
+    <Grid Margin="5">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*"/>
+            <ColumnDefinition Width="*"/>
+            <ColumnDefinition Width="*"/>
+            <ColumnDefinition Width="*"/>
+        </Grid.ColumnDefinitions>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+        <Canvas Width="1250" Height="750" Margin="5" Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="4" Background="White">
             <i:Interaction.Behaviors>
                 <vmt:MouseBehaviour MouseX="{Binding Path=MouseX, Mode=OneWayToSource}" MouseY="{Binding Path=MouseY, Mode=OneWayToSource}" />
             </i:Interaction.Behaviors>
@@ -128,6 +140,25 @@
                                                     ConverterParameter="{Binding Path=SelectedPointDiameter}"/>
                 </Canvas.Top>
             </Ellipse>
+
+            <Line X1="{Binding Path=SelectedLine.Point1.X}" Y1="{Binding Path=SelectedLine.Point1.Y}"
+                  X2="{Binding Path=SelectedLine.Point2.X}" Y2="{Binding Path=SelectedLine.Point2.Y}"
+                  Stroke="{Binding Path=SelectedLineColor}"
+                  StrokeThickness="{Binding Path=SelectedLineWidth}"/>
         </Canvas>
+
+        <TextBlock Grid.Row="1" Grid.Column="0" Margin="5"
+                   Text="Lanes" FontFamily="Segoe UI" FontSize="12" HorizontalAlignment="Right"/>
+
+        <TextBox Grid.Row="1" Grid.Column="1" Margin="5"
+                 Text="{Binding Path=SelectedLine.Lanes}"
+                 IsEnabled="{Binding Path=SelectedLine, Converter={StaticResource NullToBoolConverter}}"/>
+
+        <TextBlock Grid.Row="1" Grid.Column="2" Margin="5"
+                   Text="Delay" FontFamily="Segoe UI" FontSize="12" HorizontalAlignment="Right"/>
+
+        <TextBox Grid.Row="1" Grid.Column="3" Margin="5"
+                 Text="{Binding Path=SelectedLine.Delay}"
+                 IsEnabled="{Binding Path=SelectedLine, Converter={StaticResource NullToBoolConverter}}"/>
     </Grid>
 </Window>

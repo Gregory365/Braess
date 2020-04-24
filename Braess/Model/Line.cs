@@ -68,10 +68,5 @@
         {
             return (2 * Point1.GetHashCode()) + (3 * Point2.GetHashCode());
         }
-
-        public Line Clone()
-        {
-            return new Line(Point1.Clone(), Point2.Clone());
-        }
     }
 }

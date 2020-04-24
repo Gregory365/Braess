@@ -17,7 +17,6 @@
     </Window.DataContext>
     <Window.Resources>
         <vmt:PointCentraliserConverter x:Key="PointCentraliserConverter"/>
-        <vmt:LineCentraliserConverter x:Key="LineCentraliserConverter"/>
         <vmt:NullToVisibilityConverter x:Key="NullToVisibilityConverter"/>
         <vmt:NullToBoolConverter x:Key="NullToBoolConverter"/>
     </Window.Resources>
@@ -59,38 +58,10 @@
                 </ItemsControl.ItemTemplate>
             </ItemsControl>
 
-            <ItemsControl ItemsSource="{Binding Path=Lines}">
-                <ItemsControl.ItemsPanel>
-                    <ItemsPanelTemplate>
-                        <Canvas/>
-                    </ItemsPanelTemplate>
-                </ItemsControl.ItemsPanel>
-                <ItemsControl.ItemContainerStyle>
-                    <Style TargetType="ContentPresenter">
-                        <Setter Property="Canvas.Left">
-                            <Setter.Value>
-                                <MultiBinding Converter="{StaticResource LineCentraliserConverter}" ConverterParameter="8">
-                                    <Binding Path="Point1.X"/>
-                                    <Binding Path="Point2.X"/>
-                                </MultiBinding>
-                            </Setter.Value>
-                        </Setter>
-                        <Setter Property="Canvas.Top">
-                            <Setter.Value>
-                                <MultiBinding Converter="{StaticResource LineCentraliserConverter}" ConverterParameter="8">
-                                    <Binding Path="Point1.Y"/>
-                                    <Binding Path="Point2.Y"/>
-                                </MultiBinding>
-                            </Setter.Value>
-                        </Setter>
-                    </Style>
-                </ItemsControl.ItemContainerStyle>
-                <ItemsControl.ItemTemplate>
-                    <DataTemplate>
-                        <TextBlock Text="{Binding Path=Length, StringFormat=N0}" FontFamily="Segoe UI" FontSize="12"/>
-                    </DataTemplate>
-                </ItemsControl.ItemTemplate>
-            </ItemsControl>
+            <Line X1="{Binding Path=SelectedLine.Point1.X}" Y1="{Binding Path=SelectedLine.Point1.Y}"
+                  X2="{Binding Path=SelectedLine.Point2.X}" Y2="{Binding Path=SelectedLine.Point2.Y}"
+                  Stroke="{Binding Path=SelectedLineColor}"
+                  StrokeThickness="{Binding Path=SelectedLineWidth}"/>
 
             <ItemsControl ItemsSource="{Binding Path=Points}">
                 <ItemsControl.ItemsPanel>
@@ -140,11 +111,6 @@
                                                     ConverterParameter="{Binding Path=SelectedPointDiameter}"/>
                 </Canvas.Top>
             </Ellipse>
-
-            <Line X1="{Binding Path=SelectedLine.Point1.X}" Y1="{Binding Path=SelectedLine.Point1.Y}"
-                  X2="{Binding Path=SelectedLine.Point2.X}" Y2="{Binding Path=SelectedLine.Point2.Y}"
-                  Stroke="{Binding Path=SelectedLineColor}"
-                  StrokeThickness="{Binding Path=SelectedLineWidth}"/>
         </Canvas>
 
         <TextBlock Grid.Row="1" Grid.Column="0" Margin="5"

@@ -126,7 +126,7 @@
             if (SelectedLine is null)
             {
                 // change the selected line to be the closest line.
-                SelectedLine = closestLine.Clone();
+                SelectedLine = closestLine;
             }
             else
             {
@@ -141,7 +141,7 @@
                 else
                 {
                     // change the selected line to be the closest line.
-                    SelectedLine = closestLine.Clone();
+                    SelectedLine = closestLine;
                 }
             }
         }

@@ -4,7 +4,6 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:i="http://schemas.microsoft.com/xaml/behaviors"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        xmlns:local="clr-namespace:Braess.View"
         xmlns:vm="clr-namespace:Braess.ViewModel"
         xmlns:vmt="clr-namespace:Braess.ViewModel.Tools"
         mc:Ignorable="d"
@@ -12,26 +11,53 @@
         WindowStartupLocation="CenterScreen"
         Title="{Binding Path=Title}"
         Background="Gray">
+    
     <Window.DataContext>
         <vm:MainWindowVM/>
     </Window.DataContext>
+    
     <Window.Resources>
         <vmt:PointCentraliserConverter x:Key="PointCentraliserConverter"/>
         <vmt:NullToVisibilityConverter x:Key="NullToVisibilityConverter"/>
         <vmt:NullToBoolConverter x:Key="NullToBoolConverter"/>
     </Window.Resources>
+    
     <Grid Margin="5">
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="*"/>
             <ColumnDefinition Width="*"/>
             <ColumnDefinition Width="*"/>
             <ColumnDefinition Width="*"/>
+            <ColumnDefinition Width="*"/>
+            <ColumnDefinition Width="*"/>
         </Grid.ColumnDefinitions>
         <Grid.RowDefinitions>
+            <RowDefinition Height="*"/>
             <RowDefinition Height="auto"/>
             <RowDefinition Height="*"/>
+            <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
-        <Canvas Width="1250" Height="750" Margin="5" Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="4" Background="White">
+
+        <TextBlock Grid.Row="0" Grid.Column="0" Margin="5"
+                   Text="Total Time" HorizontalAlignment="Right"/>
+
+        <TextBlock Grid.Row="0" Grid.Column="1" Margin="5" Padding="2,0"
+                   Text="{Binding Path=TotalTime, StringFormat=N0}" Background="LightGray"/>
+
+        <TextBlock Grid.Row="0" Grid.Column="2" Margin="5"
+                   Text="Population" HorizontalAlignment="Right"/>
+
+        <TextBox Grid.Row="0" Grid.Column="3" Margin="5"
+                 Text="{Binding Path=Population, UpdateSourceTrigger=PropertyChanged}"
+                 IsEnabled="{Binding Path=Population, Converter={StaticResource NullToBoolConverter}}"/>
+
+        <Button Grid.Row="0" Grid.Column="4" Margin="5"
+                Content="Calculate selfish routes" Command="{Binding Path=FindAllRoutesCommand}"/>
+
+        <Button Grid.Row="0" Grid.Column="5" Margin="5"
+                Content="Calculate hive mind routes" Command="{Binding Path=FindBestRoutesCommand}"/>
+
+        <Canvas Width="1250" Height="750" Margin="5" Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="6" Background="White">
             <i:Interaction.Behaviors>
                 <vmt:MouseBehaviour MouseX="{Binding Path=MouseX, Mode=OneWayToSource}" MouseY="{Binding Path=MouseY, Mode=OneWayToSource}" />
             </i:Interaction.Behaviors>
@@ -53,7 +79,7 @@
                         <Line X1="{Binding Path=Point1.X}" Y1="{Binding Path=Point1.Y}"
                               X2="{Binding Path=Point2.X}" Y2="{Binding Path=Point2.Y}"
                               Stroke="{Binding Path=DataContext.LineColor, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=Window}}"
-                              StrokeThickness="{Binding Path=DataContext.LineWidth, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=Window}}"/>
+                              StrokeThickness="{Binding Path=Lanes, UpdateSourceTrigger=PropertyChanged}"/>
                     </DataTemplate>
                 </ItemsControl.ItemTemplate>
             </ItemsControl>
@@ -61,7 +87,7 @@
             <Line X1="{Binding Path=SelectedLine.Point1.X}" Y1="{Binding Path=SelectedLine.Point1.Y}"
                   X2="{Binding Path=SelectedLine.Point2.X}" Y2="{Binding Path=SelectedLine.Point2.Y}"
                   Stroke="{Binding Path=SelectedLineColor}"
-                  StrokeThickness="{Binding Path=SelectedLineWidth}"/>
+                  StrokeThickness="{Binding Path=Lanes}"/>
 
             <ItemsControl ItemsSource="{Binding Path=Points}">
                 <ItemsControl.ItemsPanel>
@@ -113,18 +139,44 @@
             </Ellipse>
         </Canvas>
 
-        <TextBlock Grid.Row="1" Grid.Column="0" Margin="5"
-                   Text="Lanes" FontFamily="Segoe UI" FontSize="12" HorizontalAlignment="Right"/>
+        <TextBlock Grid.Row="2" Grid.Column="0" Margin="5"
+                   Text="Number of cars" FontFamily="Segeo UI" FontSize="12"/>
 
-        <TextBox Grid.Row="1" Grid.Column="1" Margin="5"
-                 Text="{Binding Path=SelectedLine.Lanes}"
-                 IsEnabled="{Binding Path=SelectedLine, Converter={StaticResource NullToBoolConverter}}"/>
+        <TextBlock Grid.Row="2" Grid.Column="1" Margin="5"
+                   Text="Lanes" FontFamily="Segoe UI" FontSize="12"/>
 
-        <TextBlock Grid.Row="1" Grid.Column="2" Margin="5"
-                   Text="Delay" FontFamily="Segoe UI" FontSize="12" HorizontalAlignment="Right"/>
+        <TextBlock Grid.Row="2" Grid.Column="2" Margin="5"
+                   Text="Speed Limit" FontFamily="Segoe UI" FontSize="12"/>
 
-        <TextBox Grid.Row="1" Grid.Column="3" Margin="5"
-                 Text="{Binding Path=SelectedLine.Delay}"
-                 IsEnabled="{Binding Path=SelectedLine, Converter={StaticResource NullToBoolConverter}}"/>
+        <TextBlock Grid.Row="2" Grid.Column="3" Margin="5"
+                   Text="Delay" FontFamily="Segoe UI" FontSize="12"/>
+
+        <TextBlock Grid.Row="2" Grid.Column="4" Margin="5"
+                   Text="Length" FontFamily="Segeo UI" FontSize="12"/>
+
+        <TextBlock Grid.Row="2" Grid.Column="5" Margin="5"
+                   Text="Time" FontFamily="Segoe UI" FontSize="12"/>
+
+        <TextBox Grid.Row="3" Grid.Column="0" Margin="5"
+                 Text="{Binding Path=NumberOfCars, UpdateSourceTrigger=PropertyChanged}"
+                 IsEnabled="{Binding Path=NumberOfCars, Converter={StaticResource NullToBoolConverter}}"/>
+
+        <TextBox Grid.Row="3" Grid.Column="1" Margin="5"
+                 Text="{Binding Path=Lanes, UpdateSourceTrigger=PropertyChanged}"
+                 IsEnabled="{Binding Path=Lanes, Converter={StaticResource NullToBoolConverter}}"/>
+
+        <TextBox Grid.Row="3" Grid.Column="2" Margin="5"
+                 Text="{Binding Path=SpeedLimit, UpdateSourceTrigger=PropertyChanged}"
+                 IsEnabled="{Binding Path=SpeedLimit, Converter={StaticResource NullToBoolConverter}}"/>
+
+        <TextBox Grid.Row="3" Grid.Column="3" Margin="5"
+                 Text="{Binding Path=Delay, UpdateSourceTrigger=PropertyChanged}"
+                 IsEnabled="{Binding Path=Delay, Converter={StaticResource NullToBoolConverter}}"/>
+
+        <TextBlock Grid.Row="3" Grid.Column="4" Margin="5" Padding="2,0"
+                   Text="{Binding Path=Length, StringFormat=N0}" Background="LightGray"/>
+
+        <TextBlock Grid.Row="3" Grid.Column="5" Margin="5" Padding="2,0"
+                   Text="{Binding Path=Time, StringFormat=N0}" Background="LightGray"/>
     </Grid>
 </Window>

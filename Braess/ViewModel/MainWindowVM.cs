@@ -1,5 +1,6 @@
 ﻿namespace Braess.ViewModel
 {
+    using System.Collections.Generic;
     using System.Collections.ObjectModel;
     using System.Windows.Input;
     using System.Windows.Media;
@@ -16,6 +17,82 @@
             canvas.SelectedPointChanged += Canvas_SelectedPointChanged;
             canvas.SelectedLineChanged += Canvas_SelectedLineChanged;
         }
+
+        public double? TotalTime => canvas.TotalTime;
+
+        public double? Population
+        {
+            get
+            {
+                return SelectedPoint?.Population;
+            }
+
+            set
+            {
+                SelectedPoint.Population = value.Value;
+                SelectedPointChanged();
+            }
+        }
+
+        public double? NumberOfCars
+        {
+            get
+            {
+                return SelectedLine?.NumberOfCars;
+            }
+
+            set
+            {
+                SelectedLine.NumberOfCars = value.Value;
+                SelectedLineChanged();
+            }
+        }
+
+        public double? Lanes
+        {
+            get
+            {
+                return SelectedLine?.Lanes;
+            }
+
+            set
+            {
+                SelectedLine.Lanes = value.Value;
+                SelectedLineChanged();
+            }
+        }
+
+        public double? SpeedLimit
+        {
+            get
+            {
+                return SelectedLine?.SpeedLimit;
+            }
+
+            set
+            {
+                SelectedLine.SpeedLimit = value.Value;
+                SelectedLineChanged();
+            }
+        }
+
+        public double? Delay
+        {
+            get
+            {
+                return SelectedLine?.Delay;
+            }
+
+            set
+            {
+                SelectedLine.Delay = value.Value;
+                SelectedLineChanged();
+            }
+        }
+
+        public double? Length => SelectedLine?.Length;
+
+        public double? Time => SelectedLine?.Time;
 
         public double MouseX { get; set; }
 
@@ -47,7 +124,19 @@
 
         public Line SelectedLine => canvas.SelectedLine;
 
-        public ICommand MouseClickedCommand => new RelayCommand(MouseClicked);
+        public ICommand MouseClickedCommand => new RelayCommand(() => MouseClicked());
+
+        public ICommand FindAllRoutesCommand => new RelayCommand(() =>
+        {
+            canvas.FindAllRoutes();
+            OnPropertyChanged(nameof(TotalTime));
+        });
+
+        public ICommand FindBestRoutesCommand => new RelayCommand(() =>
+        {
+            canvas.FindBestRoutes();
+            OnPropertyChanged(nameof(TotalTime));
+        });
 
         public void MouseClicked()
         {
@@ -81,12 +170,33 @@
 
         private void Canvas_SelectedPointChanged(object sender, System.EventArgs e)
         {
+            SelectedPointChanged();
+        }
+
+        private void SelectedPointChanged()
+        {
+            OnPropertyChanged(nameof(Points));
             OnPropertyChanged(nameof(SelectedPoint));
+            OnPropertyChanged(nameof(Population));
+            OnPropertyChanged(nameof(TotalTime));
         }
 
         private void Canvas_SelectedLineChanged(object sender, System.EventArgs e)
         {
+            SelectedLineChanged();
+        }
+
+        private void SelectedLineChanged()
+        {
+            OnPropertyChanged(nameof(Lines));
             OnPropertyChanged(nameof(SelectedLine));
+            OnPropertyChanged(nameof(NumberOfCars));
+            OnPropertyChanged(nameof(Lanes));
+            OnPropertyChanged(nameof(SpeedLimit));
+            OnPropertyChanged(nameof(Delay));
+            OnPropertyChanged(nameof(Length));
+            OnPropertyChanged(nameof(Time));
+            OnPropertyChanged(nameof(TotalTime));
         }
     }
 }

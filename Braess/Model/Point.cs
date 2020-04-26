@@ -8,6 +8,8 @@
             Y = y;
         }
 
+        public double Population { get; set; } = 10;
+
         public double X { get; }
 
         public double Y { get; }
@@ -35,11 +37,6 @@
         public override int GetHashCode()
         {
             return (2 * X.GetHashCode()) + (3 * Y.GetHashCode());
-        }
-
-        public Point Clone()
-        {
-            return new Point(X, Y);
         }
     }
 }

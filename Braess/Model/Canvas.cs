@@ -4,8 +4,6 @@
     using System.Collections.Generic;
     using System.Collections.ObjectModel;
     using System.Linq;
-    using System.Windows;
-    using System.Windows.Media;
     using Braess.Model.Tools;
     using MoreLinq;
 
@@ -22,6 +20,10 @@
         public event EventHandler SelectedPointChanged = delegate { };
 
         public event EventHandler SelectedLineChanged = delegate { };
+
+        public double TotalNumberOfCars { get; set; } = 10;
+
+        public double TotalTime => lines.Sum(x => x.Time * x.NumberOfCars);
 
         public Point SelectedPoint
         {
@@ -69,7 +71,7 @@
                 SelectedPoint = null;
             }
 
-            if (SelectedLine.Point1 == closestPoint || SelectedLine.Point2 == closestPoint)
+            if (SelectedLine?.Point1 == closestPoint || SelectedLine?.Point2 == closestPoint)
             {
                 SelectedLine = null;
             }
@@ -91,7 +93,7 @@
             if (SelectedPoint is null)
             {
                 // change the selected point to be the closest point.
-                SelectedPoint = closestPoint.Clone();
+                SelectedPoint = closestPoint;
             }
             else
             {
@@ -108,8 +110,76 @@
                     ToggleLine(SelectedPoint, closestPoint);
 
                     // change the selected point to be the closest point.
-                    SelectedPoint = closestPoint.Clone();
+                    SelectedPoint = closestPoint;
                 }
+            }
+        }
+
+        public void FindAllRoutes()
+        {
+            foreach (var line in lines)
+            {
+                line.NumberOfCars = 0;
+            }
+
+            List<Journey> journeys = new List<Journey>();
+
+            double totalPopulation = points.Sum(x => x.Population);
+            for (int i = 0; i < points.Count - 1; i++)
+            {
+                for (int j = i + 1; j < points.Count; j++)
+                {
+                    for (int k = 0; k < Math.Round(points[i].Population * points[j].Population / totalPopulation); k++)
+                    {
+                        journeys.Add(new Journey(points[i], points[j]));
+                        journeys.Add(new Journey(points[j], points[i]));
+                    }
+                }
+            }
+
+            foreach (var journey in journeys)
+            {
+                FindRoute(journey);
+            }
+
+            foreach (var journey in journeys)
+            {
+                UndoJourney(journey);
+                FindRoute(journey);
+            }
+        }
+
+        public void FindBestRoutes()
+        {
+            foreach (var line in lines)
+            {
+                line.NumberOfCars = 0;
+            }
+
+            List<Journey> journeys = new List<Journey>();
+
+            double totalPopulation = points.Sum(x => x.Population);
+            for (int i = 0; i < points.Count - 1; i++)
+            {
+                for (int j = i + 1; j < points.Count; j++)
+                {
+                    for (int k = 0; k < Math.Round(points[i].Population * points[j].Population / totalPopulation); k++)
+                    {
+                        journeys.Add(new Journey(points[i], points[j]));
+                        journeys.Add(new Journey(points[j], points[i]));
+                    }
+                }
+            }
+
+            foreach (var journey in journeys)
+            {
+                FindBestRoute(journey);
+            }
+
+            foreach (var journey in journeys)
+            {
+                UndoJourney(journey);
+                FindBestRoute(journey);
             }
         }
 
@@ -146,6 +216,11 @@
             }
         }
 
+        private static Point GetOtherPoint(Line line, Point point)
+        {
+            return line.Point1 == point ? line.Point2 : line.Point1;
+        }
+
         private static double GetPointsDistance(Point point1, Point point2)
         {
             return Math.Sqrt(Math.Pow(point1.X - point2.X, 2) + Math.Pow(point1.Y - point2.Y, 2));
@@ -154,6 +229,107 @@
         private static double GetLinesDistance(Line line, Point point)
         {
             return Math.Sqrt(Math.Pow(line.CentrePoint.X - point.X, 2) + Math.Pow(line.CentrePoint.Y - point.Y, 2));
+        }
+
+        private void FindRoute(Journey journey)
+        {
+            Dictionary<Point, DijkstrasRow> dijkstrasTable = points.ToDictionary(x => x, x => new DijkstrasRow());
+            dijkstrasTable[journey.StartPoint].Distance = 0;
+
+            Step(journey.StartPoint, journey.EndPoint, dijkstrasTable);
+            BackFill(journey, journey.EndPoint, dijkstrasTable);
+        }
+
+        private void FindBestRoute(Journey journey)
+        {
+            Dictionary<Point, DijkstrasRow> dijkstrasTable = points.ToDictionary(x => x, x => new DijkstrasRow());
+            dijkstrasTable[journey.StartPoint].Distance = 0;
+
+            BestStep(journey.StartPoint, journey.EndPoint, dijkstrasTable);
+            BackFill(journey, journey.EndPoint, dijkstrasTable);
+        }
+
+        private void Step(Point startPoint, Point endPoint, Dictionary<Point, DijkstrasRow> dijkstrasTable)
+        {
+            if (startPoint == endPoint)
+            {
+                return;
+            }
+
+            IEnumerable<Line> linesFromPoint = lines.Where(x => x.Point1 == startPoint || x.Point2 == startPoint);
+
+            foreach (var line in linesFromPoint)
+            {
+                Point otherPoint = GetOtherPoint(line, startPoint);
+                if (!dijkstrasTable[otherPoint].Visited)
+                {
+                    line.NumberOfCars += 1;
+                    if (dijkstrasTable[otherPoint].Distance > (line.Time + dijkstrasTable[startPoint].Distance))
+                    {
+                        dijkstrasTable[otherPoint].Distance = line.Time + dijkstrasTable[startPoint].Distance;
+                        dijkstrasTable[otherPoint].PreviousPoint = startPoint;
+                        dijkstrasTable[otherPoint].Line = line;
+                    }
+
+                    line.NumberOfCars -= 1;
+                }
+            }
+
+            dijkstrasTable[startPoint].Visited = true;
+            Step(dijkstrasTable.Where(x => !x.Value.Visited).MinBy(x => x.Value.Distance).First().Key, endPoint, dijkstrasTable);
+        }
+
+        private void BestStep(Point startPoint, Point endPoint, Dictionary<Point, DijkstrasRow> dijkstrasTable)
+        {
+            if (startPoint == endPoint)
+            {
+                return;
+            }
+
+            IEnumerable<Line> linesFromPoint = lines.Where(x => x.Point1 == startPoint || x.Point2 == startPoint);
+
+            foreach (var line in linesFromPoint)
+            {
+                Point otherPoint = GetOtherPoint(line, startPoint);
+                if (!dijkstrasTable[otherPoint].Visited)
+                {
+                    double previousTotalTime = TotalTime;
+                    line.NumberOfCars += 1;
+                    if (dijkstrasTable[otherPoint].Distance > (TotalTime - previousTotalTime + dijkstrasTable[startPoint].Distance))
+                    {
+                        dijkstrasTable[otherPoint].Distance = TotalTime - previousTotalTime + dijkstrasTable[startPoint].Distance;
+                        dijkstrasTable[otherPoint].PreviousPoint = startPoint;
+                        dijkstrasTable[otherPoint].Line = line;
+                    }
+
+                    line.NumberOfCars -= 1;
+                }
+            }
+
+            dijkstrasTable[startPoint].Visited = true;
+            BestStep(dijkstrasTable.Where(x => !x.Value.Visited).MinBy(x => x.Value.Distance).First().Key, endPoint, dijkstrasTable);
+        }
+
+        private void BackFill(Journey journey, Point endPoint, Dictionary<Point, DijkstrasRow> dijkstrasTable)
+        {
+            if (journey.StartPoint == endPoint)
+            {
+                return;
+            }
+
+            dijkstrasTable[endPoint].Line.NumberOfCars += 1;
+            journey.Path.Add(dijkstrasTable[endPoint].Line);
+            BackFill(journey, dijkstrasTable[endPoint].PreviousPoint, dijkstrasTable);
+        }
+
+        private void UndoJourney(Journey journey)
+        {
+            foreach (var line in journey.Path)
+            {
+                line.NumberOfCars -= 1;
+            }
+
+            journey.Path.Clear();
         }
 
         private Point GetClosestPoint(Point point)

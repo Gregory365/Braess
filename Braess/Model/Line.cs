@@ -27,16 +27,22 @@
                 Point2 = point1;
             }
 
-            Length = Math.Sqrt(Math.Pow(Point1.X - Point2.X, 2) + Math.Pow(Point1.Y - Point2.Y, 2));
+            Length = 10 * Math.Sqrt(Math.Pow(Point1.X - Point2.X, 2) + Math.Pow(Point1.Y - Point2.Y, 2));
 
             CentrePoint = new Point((Point1.X + Point2.X) / 2, (Point1.Y + Point2.Y) / 2);
         }
 
+        public double NumberOfCars { get; set; } = 0;
+
         public double Lanes { get; set; } = 1;
+
+        public double SpeedLimit { get; set; } = 25;
 
         public double Delay { get; set; } = 0;
 
         public double Length { get; }
+
+        public double Time => (NumberOfCars / Lanes) + (Length / SpeedLimit) + Delay;
 
         public Point Point1 { get; }
 
